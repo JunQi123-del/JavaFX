@@ -1,0 +1,1027 @@
+import javafx.application.Application;
+import javafx.stage.Stage;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import javafx.scene.control.ButtonBar.*;
+import javafx.scene.layout.*;
+import javafx.event.*;
+import javafx.collections.*;
+import javafx.scene.text.*;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import java.util.*;
+import java.util.Iterator;
+import javafx.scene.control.Alert.*;
+import java.io.*;
+import java.util.*;
+ 
+/**
+    *
+    * ICT 373 Assignment 2
+    * date 4 November 2020
+    * filename Assignment2
+    * Author Tan JunQi 33872846
+    * program TreeView class
+    */
+ 
+public class TreeView extends Application {
+   
+   
+   
+    private String SaveFileName = "FamilyTree.dat";  // Can change the save  name here
+    private String LoadFileName = "FamilyTree.dat";  //can change the  loadfile name here
+   
+    //Layout-------------------------------
+    private Button LoadTree;
+    private Button SaveTree;
+    private Button ViewFamilyTree;
+    private Button Addrootperson;
+    private Button Edit;
+    private Button AddRelative;
+    private Button ChooseDataInput;
+    HBox TreeBox = new HBox(10);
+    private TextArea ta = new TextArea();
+    GridPane gp = new GridPane();
+    //--------------------------------------------
+    //Toggeling between demo and user input data 0 = demo, 1 = user input
+    int count = 1;
+   
+    // Radio Button for choosing demo data or user input or fileInput
+    RadioButton DemoData = new RadioButton("Demo Data");
+    RadioButton UserInput = new RadioButton("User Input");
+    RadioButton FileInput = new RadioButton("File Input");
+    ToggleGroup dataoption = new ToggleGroup();
+    private Label option = new Label("Input Option");
+    VBox OptionPage = new VBox();
+    //----------------------------------------------------------------
+    // Adding root person method variables-------------------------------
+    private TextField tfFName = new TextField();
+    private TextField tfLName = new TextField();
+    private TextField MaidenName = new TextField();
+    private RadioButton Female = new RadioButton("Female");
+    private RadioButton Male = new RadioButton("Male");
+    private TextArea Description = new TextArea();
+    private Label FName = new Label("FirstName");
+    private Label LName = new Label("LastName");
+    private Label MName = new Label("MaidenName");
+    private Label LGender = new Label("Gender");
+    private Label Info = new Label ("Personal Information: ");
+    private ToggleGroup TGender = new ToggleGroup();
+    private Label LDescription = new Label("Biblography");
+    //-------------------------------------------------------------------
+   
+    // Address fields in addrootperson actionevent--------------------------
+    private TextField StreetName = new TextField();
+    private TextField StreetNum = new TextField();
+    private TextField suburb = new TextField();
+    private TextField postCode = new TextField();
+    private Label SName = new Label("StreetName");
+    private Label SNum = new Label("StreetNum");
+    private Label LSub = new Label("suburb");
+    private Label Post = new Label("postCode");
+    private Label AddressInfo = new Label ("Address Information: ");
+    Button Confirm = new Button("Add Root Person");
+    VBox add = new VBox();    
+    //-------------------------------------------------------------------
+    // Collecting all root person --------------------------
+    Family FamilyMembers = new Family();
+    Family demo = new Family();
+    Family demo1 = new Family();
+    TreeItem<Family> subtitleChildren = new TreeItem<Family>();
+    //-------------------------------------------------------------
+    // Viewing tree
+    VBox TreeTA = new VBox();
+    javafx.scene.control.TreeView<Family> FamilyTree  = new javafx.scene.control.TreeView<>(); ;
+    TreeItem<Family> root = new TreeItem<Family>();
+    //---------------------------------------------------------------------
+    //Editing page----------------------------------------------------
+    private TextField EtfFName = new TextField();
+    private TextField EtfLName = new TextField();
+    private TextField EMaidenName = new TextField();
+    private TextField EStreetName = new TextField();
+    private TextField EStreetNum = new TextField();
+    private TextField Esuburb = new TextField();
+    private TextField EpostCode = new TextField();
+    private TextField EGender = new TextField();
+    private TextArea EDescription = new TextArea();
+    private RadioButton EFemale = new RadioButton("Female");
+    private RadioButton EMale = new RadioButton("Male");
+    private ToggleGroup ETgender = new ToggleGroup();
+    VBox Editing = new VBox();
+    private Button ConfirmEdit;
+    //--------------------------------------------------------------
+    //Adding relative page-----------------------------------------
+    Button ConfirmAddRelative = new Button("Confirm Add Relative");
+    VBox addingrel = new VBox();
+    private Label reltype = new Label("Relative type");
+    private RadioButton Spouse = new RadioButton("Spouse");
+    private RadioButton Mother = new RadioButton("Mother");
+    private RadioButton Father = new RadioButton("Father");
+    private RadioButton kids = new RadioButton ("Children");
+    private ToggleGroup TrelType = new ToggleGroup();
+    private TextField AtfFName = new TextField();
+    private TextField AtfLName = new TextField();
+    private TextField AMaidenName = new TextField();
+    private TextArea  ADescription = new TextArea();
+    private TextField AStreetName = new TextField();
+    private TextField AStreetNum = new TextField();
+    private TextField Asuburb = new TextField();
+    private TextField ApostCode = new TextField();
+    //-----------------------------------------------------------------
+   
+     
+    @Override
+    public void start (Stage topView)
+    {
+        // Setting the options
+        Male.setToggleGroup(TGender);
+        Male.setSelected(true);
+        Female.setToggleGroup(TGender);
+        Female.setSelected(true);
+        ta.setEditable(false);
+        ConfirmEdit = new Button("Confirm");
+        demo = demo1.getDemoFamily();
+       
+       
+        topView.setScene(new Scene(gp));
+       
+       
+       
+        //Setting children titles for subroot
+        subtitleChildren.setExpanded(true);
+        Family ChildrenTitle = new Family();
+        ChildrenTitle.setFirstName("Children");
+        TreeItem<Family> CtitleHolder = new TreeItem<Family>(ChildrenTitle);
+        subtitleChildren.getChildren().add(CtitleHolder);
+       
+       
+       
+        //Add header
+        Text Header = new Text("Welcome to the Family Tree Application");
+        Header.setFont(new Font(30));
+        gp.add(Header,0,0);
+       
+        //Creating the button
+       
+        LoadTree = new Button("Load Tree");
+        SaveTree = new Button("Save Tree");
+        ViewFamilyTree = new Button("View Tree");
+        Addrootperson = new Button("Add root person");
+        Edit = new Button("Edit");
+        AddRelative = new Button("Ädd Relative");
+        ChooseDataInput = new Button("Input Method");
+        SaveTree.setOnAction(save ->SaveObject());
+        // Setting action event for Add root person
+        TreeBox.getChildren().addAll(ChooseDataInput,LoadTree,SaveTree,ViewFamilyTree,Addrootperson,Edit,AddRelative);
+        ChooseDataInput.setOnAction(evts->ChooseMethod());
+        Addrootperson.setOnAction(evt -> Addrootperson());
+        ViewFamilyTree.setOnAction(event -> ViewTree());
+        LoadTree.setOnAction(load ->LoadObject());
+        Edit.setOnAction(ev ->EditInfo());
+        AddRelative.setOnAction(evtt ->AddRelative());
+        gp.addRow(1,TreeBox);
+       
+        //Adding vbox for the addrootperson button
+       gp.addRow(2, add);
+     
+       // Adding treeview and text area
+       FamilyTree.setOnMouseClicked(evt -> showName());
+       gp.addRow(3, TreeTA);
+       
+       // Edit page
+       gp.addRow(4,Editing);
+       
+       // Add reletive page
+       gp.addRow(5,addingrel);
+       
+       //Adding InputMethod page
+       gp.addRow(6, OptionPage);
+       
+        topView.show();
+    }
+   
+    public void ChooseMethod()
+    {
+        ClearLayout();
+        ta.clear();
+        Button Confirm = new Button("Confirm");
+        HBox hb = new HBox();
+        DemoData.setSelected(true);
+        UserInput.setSelected(true);
+        FileInput.setSelected(true);
+        DemoData.setToggleGroup(dataoption);
+        UserInput.setToggleGroup(dataoption);
+        FileInput.setToggleGroup(dataoption);
+        Confirm.setOnAction(evt->ConfirmOption());
+        hb.getChildren().addAll(option,DemoData,UserInput,FileInput);
+        OptionPage.getChildren().addAll(hb,Confirm);
+    }
+    public void ConfirmOption()
+    {
+        if(DemoData.isSelected())
+        {
+            count = 0;
+        }
+        else if(UserInput.isSelected() || FileInput.isSelected())
+        {
+            count = 1;
+        }
+        //show Alert  Message
+         Alert OptionAlert = new Alert(AlertType.INFORMATION);
+         OptionAlert.setContentText("Option read successfully");
+         OptionAlert.setTitle("Successful");
+         OptionAlert.show();
+       
+    }
+   
+    public void SaveObject()
+    {
+        try (ObjectOutputStream outfile = new ObjectOutputStream(new FileOutputStream(SaveFileName)))
+        {
+            if(count ==0)
+            {
+                outfile.writeObject(demo);
+            }
+            else if(count == 1)
+            {
+                outfile.writeObject(FamilyMembers);
+            }
+             //show Alert  Message
+            Alert SaveAlert = new Alert(AlertType.INFORMATION);
+            SaveAlert.setContentText("Family Tree Saved");
+            SaveAlert.setTitle("Successful");
+            SaveAlert.show();
+        }
+        catch(IOException e)
+        {
+             //show Alert  Message
+            Alert SaveErrorAlert = new Alert(AlertType.ERROR);
+            SaveErrorAlert.setContentText("Error Saving into file");
+            SaveErrorAlert.setTitle("Alert");
+            SaveErrorAlert.show();
+        }
+    }
+   
+    public void LoadObject()
+    {
+        try(ObjectInputStream infile = new ObjectInputStream(new FileInputStream(LoadFileName)))
+        {
+            FamilyMembers = (Family)infile.readObject();
+             //show Alert  Message
+            Alert LoadAlert = new Alert(AlertType.INFORMATION);
+            LoadAlert.setContentText("Successfully read file");
+            LoadAlert.setTitle("Successful");
+            LoadAlert.show();
+        }
+        catch(IOException | ClassNotFoundException e)
+        {
+             //show Alert  Message
+            Alert LoadErrorAlert = new Alert(AlertType.ERROR);
+            LoadErrorAlert.setContentText("Error reading file");
+            LoadErrorAlert.setTitle("Alert");
+            LoadErrorAlert.show();
+        }
+    }
+   
+    public void Addrootperson()
+    {
+        // Adding personal information fields into the Addrootperson button
+       ClearLayout();
+       VBox temp = new VBox();
+       
+       HBox FnameRow = new HBox(FName,tfFName);    
+       HBox LnameRow = new HBox(LName,tfLName);    
+       HBox MnameRow = new HBox(MName,MaidenName);  
+       HBox GenderRow = new HBox(LGender,Female,Male);    
+       HBox DescRow = new HBox(LDescription,Description);          
+       // Adding address information fields      
+       HBox StNameRow = new HBox(SName,StreetName);    
+       HBox StNnumRow = new HBox(SNum,StreetNum);    
+       HBox SubRow = new HBox(LSub,suburb);    
+       HBox PostCodeRow = new HBox(Post,postCode);
+       
+       //Adding buttons into the fields
+       
+       Confirm.setOnAction(addevt->ConfirmRootPerson());    
+       temp.getChildren().addAll(Info,FnameRow,LnameRow,MnameRow,GenderRow,DescRow);
+       temp.getChildren().addAll(AddressInfo, StNameRow,StNnumRow,SubRow,PostCodeRow);
+       temp.getChildren().addAll(Confirm);
+       add.getChildren().addAll(temp);
+    }
+    public void ConfirmRootPerson()
+    {
+       char Gender;
+       Address AddressInfo = new Address(StreetName.getText(),StreetNum.getText(),
+                                            suburb.getText(),postCode.getText());
+       if(Male.isSelected())
+           Gender = 'M';
+       else
+           Gender = 'F';
+       Family RootPerson = new Family();
+       RootPerson.setAddress(AddressInfo);
+       RootPerson.setFirstName(tfFName.getText());
+       RootPerson.setLastName(tfLName.getText());
+       RootPerson.setGender(Gender);
+       RootPerson.setBiblography(Description.getText());
+       FamilyMembers = RootPerson;
+       Alert AddRootAlert = new Alert(AlertType.INFORMATION);
+       AddRootAlert.setContentText("Sucessfully added root person");
+       AddRootAlert.setTitle("Sucessful");
+       AddRootAlert.show();
+       
+    }
+   
+    public void ClearLayout()
+    {
+        add.getChildren().clear();
+        Editing.getChildren().clear();
+        addingrel.getChildren().clear();
+        TreeTA.getChildren().clear();
+        OptionPage.getChildren().clear();
+    }
+   
+    public void ViewTree()
+    {
+        // removing any layout boxes from other events.
+        ClearLayout();
+        VBox vb = new VBox();
+        //----------Use Demo data---------
+        if(count==0)
+        {        
+        root = CreateData(demo);
+        FamilyTree.setRoot(root);
+        FamilyTree.getRoot().setExpanded(true);
+        }
+        // -------------- END of demo data------------
+        else if(count == 1)
+        {
+       
+        root = CreateData(FamilyMembers);
+        FamilyTree.setRoot(root);
+        FamilyTree.getRoot().setExpanded(true);
+        }
+     
+       
+        HBox hb = new HBox(FamilyTree,ta);
+        vb.getChildren().addAll(hb);
+        TreeTA.getChildren().add(vb);
+    }
+    private TreeItem<Family> CreateData(Family fam)
+    {
+        TreeItem<Family> root = new TreeItem<>(fam);
+        if(fam.check("Father"))
+        {
+            Family father = fam.getFather();
+            TreeItem<Family> dad = CreateData(father);
+            root.getChildren().add(dad);
+        }
+        if (fam.check("Mother"))
+        {
+            Family mother = fam.getMother();
+            TreeItem<Family> mom = CreateData(mother);
+            root.getChildren().add(mom);
+        }
+        if (fam.check("Spouse"))
+        {
+            Family spouse = fam.getSpouse();
+            TreeItem<Family> partner = CreateData(spouse);
+            root.getChildren().add(partner);
+        }
+        Iterator<Family> children = fam.getIterator();
+        while(children.hasNext())
+        {
+            Family temp = children.next();
+            TreeItem<Family> childs = CreateData(temp);        
+            root.getChildren().add(childs);
+        }
+        return root;
+    }
+   
+    public void showName()
+    {
+        TreeItem<Family> showInfo = FamilyTree.getSelectionModel().getSelectedItem();
+        if(showInfo != null)
+        {
+            Family info = showInfo.getValue();
+            ta.setText(info.getFamilyHierarchy()); // get all information from Family class in string
+        }
+    }
+   
+    public void EditInfo()
+    {
+        //-------------Removing other layouts
+        ClearLayout();
+        //----------------------------------------
+        TreeItem<Family> getInfo = FamilyTree.getSelectionModel().getSelectedItem();
+        EMale.setToggleGroup(ETgender);
+        EFemale.setToggleGroup(ETgender);
+        EMale.setSelected(true);
+        EFemale.setSelected(true);
+        if(getInfo !=null)
+        {
+            Family info = getInfo.getValue();
+           
+            VBox temp = new VBox();
+       TextField Gender = new TextField();
+       HBox FnameRow = new HBox(FName,EtfFName);
+       EtfFName.setText(info.getFirstName());
+     
+       HBox LnameRow = new HBox(LName,EtfLName);
+       EtfLName.setText(info.getLastName());
+       HBox MnameRow = new HBox(MName,EMaidenName);
+       EMaidenName.setText(info.getMaidenName());
+       HBox GenderRow = new HBox(LGender,EFemale,EMale);
+       HBox DescRow = new HBox(LDescription,EDescription);
+       EDescription.setText(info.getBiblography());
+       
+       // Adding address information fields
+       HBox StNameRow = new HBox(SName,EStreetName);
+       EStreetName.setText(info.getAddress().GetStreetName());
+       HBox StNnumRow = new HBox(SNum,EStreetNum);
+       EStreetNum.setText(info.getAddress().GetStreetNumber());
+       HBox SubRow = new HBox(LSub,Esuburb);
+       Esuburb.setText(info.getAddress().Getsuburb());
+       HBox PostCodeRow = new HBox(Post,EpostCode);
+       EpostCode.setText(info.getAddress().GetPostCode());
+       //Adding buttons into the fields
+   
+       ConfirmEdit.setOnAction(addevt->ConfirmEditPerson());
+       temp.getChildren().addAll(Info,FnameRow,LnameRow,MnameRow,GenderRow,DescRow);
+       temp.getChildren().addAll(AddressInfo, StNameRow,StNnumRow,SubRow,PostCodeRow);
+       temp.getChildren().addAll(ConfirmEdit);
+       Editing.getChildren().addAll(temp);
+        }
+    }
+    public void ConfirmEditPerson()
+    {
+        Address add = new Address(EStreetName.getText(),EStreetNum.getText(),Esuburb.getText(),
+                                        EpostCode.getText());
+       if(EMale.isSelected())
+       {
+           char Male= 'M';
+           FamilyTree.getSelectionModel().getSelectedItem().getValue().setGender(Male);
+       }
+       else if(EFemale.isSelected())
+       {
+           char female = 'F';
+           FamilyTree.getSelectionModel().getSelectedItem().getValue().setGender(female);
+       }
+       
+       
+        FamilyTree.getSelectionModel().getSelectedItem().getValue().setFirstName(EtfFName.getText());
+        FamilyTree.getSelectionModel().getSelectedItem().getValue().setLastName(EtfLName.getText());
+        FamilyTree.getSelectionModel().getSelectedItem().getValue().setMaidenName(EMaidenName.getText());
+        FamilyTree.getSelectionModel().getSelectedItem().getValue().setBiblography(EDescription.getText());
+        FamilyTree.getSelectionModel().getSelectedItem().getValue().setAddress(add);
+       
+       Alert EditAlert = new Alert(AlertType.INFORMATION);
+       EditAlert.setContentText("Sucessfully Edited Family Member");
+       EditAlert.setTitle("Sucessful");
+       EditAlert.show();
+       
+        //showName();
+    }
+   
+    public void AddRelative()
+    {
+        ClearLayout(); // removing other layouts
+        VBox temp = new VBox();
+       
+       Spouse.setToggleGroup(TrelType);
+       Mother.setToggleGroup(TrelType);
+       Father.setToggleGroup(TrelType);
+       kids.setToggleGroup(TrelType);
+       Spouse.setSelected(true);
+       Mother.setSelected(true);
+       Father.setSelected(true);
+       kids.setSelected(true);
+       HBox typeRow = new HBox (reltype,Spouse,Mother,Father,kids);
+       HBox FnameRow = new HBox(FName,AtfFName);    
+       HBox LnameRow = new HBox(LName,AtfLName);    
+       HBox MnameRow = new HBox(MName,AMaidenName);  
+       HBox GenderRow = new HBox(LGender,Female,Male);    
+       HBox DescRow = new HBox(LDescription,ADescription);  
+       
+       // Adding address information fields
+       
+       HBox StNameRow = new HBox(SName,AStreetName);  
+       HBox StNnumRow = new HBox(SNum,AStreetNum);    
+       HBox SubRow = new HBox(LSub,Asuburb);    
+       HBox PostCodeRow = new HBox(Post,ApostCode);      
+       //Adding buttons into the fields
+       
+       ConfirmAddRelative.setOnAction(addevt->ConfirmAddRelative());
+     
+       temp.getChildren().addAll(typeRow,Info,FnameRow,LnameRow,MnameRow,GenderRow,DescRow);
+       temp.getChildren().addAll(AddressInfo, StNameRow,StNnumRow,SubRow,PostCodeRow);
+       temp.getChildren().addAll(ConfirmAddRelative);
+       addingrel.getChildren().addAll(temp);
+    }
+   
+    public void ConfirmAddRelative()
+    {
+       
+       char Gender ;
+       int CheckError = 0;
+       Address AddressInfo = new Address(AStreetName.getText(),AStreetNum.getText(),
+                                            Asuburb.getText(),ApostCode.getText());
+       if(Male.isSelected())
+           Gender = 'M';
+       else
+           Gender = 'F';
+       
+       Family AddRelative = new Family();
+       AddRelative.setAddress(AddressInfo);
+       AddRelative.setFirstName(AtfFName.getText());
+       AddRelative.setLastName(AtfLName.getText());
+       AddRelative.setGender(Gender);
+       AddRelative.setBiblography(ADescription.getText());
+     
+       
+       
+       if(count==0)
+       {
+       if(Spouse.isSelected())
+       {
+           demo.setSpouse(AddRelative);
+           CheckError = 0;
+       }
+       else if(Mother.isSelected())
+       {
+           if(AddRelative.getGender()=='F')
+           {
+              demo.setMother(AddRelative);
+              CheckError = 0;
+           }
+           else
+           {
+               Alert MotherError = new Alert(AlertType.ERROR);
+               MotherError.setContentText("Mother not added because gender is Male");
+               MotherError.setTitle("Unsuccessful");
+               MotherError.show();
+               CheckError = 1;
+           }
+         
+       }
+       else if(Father.isSelected())
+       {
+           if(AddRelative.getGender()=='M')
+           {
+                demo.setFather(AddRelative);
+                CheckError = 0;
+           }
+           else
+           {
+               Alert FatherError = new Alert(AlertType.ERROR);
+               FatherError.setContentText("Father not added because gender is Female");
+               FatherError.setTitle("Unsuccessful");
+               FatherError.show();
+               CheckError = 1;
+           }
+         
+       }
+       else if(kids.isSelected())
+       {
+           demo.addChild(AddRelative);
+           CheckError = 0;
+       }
+       }
+       else
+       {
+           
+         if(Spouse.isSelected())
+          {
+           FamilyMembers.setSpouse(AddRelative);
+           CheckError = 0;
+          }
+         else if(Mother.isSelected())
+          {
+           if(AddRelative.getGender()=='F')
+           {
+               FamilyMembers.setMother(AddRelative);
+               CheckError = 0;
+           }
+           else
+           {
+               Alert MotherError = new Alert(AlertType.ERROR);
+               MotherError.setContentText("Mother not added because gender is Male");
+               MotherError.setTitle("Unsuccessful");
+               MotherError.show();
+               CheckError = 1;
+           }
+           
+          }
+          else if(Father.isSelected())
+          {
+           if(AddRelative.getGender()=='M')
+           {
+                FamilyMembers.setFather(AddRelative);
+                CheckError = 0;
+           }
+           else
+           {
+               Alert FatherError = new Alert(AlertType.ERROR);
+               FatherError.setContentText("Father not added because gender is Female");
+               FatherError.setTitle("Unsuccessful");
+               FatherError.show();
+               CheckError = 1;
+           }
+          }
+          else if(kids.isSelected())
+          {
+           FamilyMembers.addChild(AddRelative);
+           CheckError = 0;
+          }
+       }
+       if(CheckError ==0)
+       {
+       TreeItem<Family> newMember = new TreeItem<Family>(AddRelative);
+       root.getChildren().add(newMember);
+       
+       Alert AddRelativeAlert = new Alert(AlertType.INFORMATION);
+       AddRelativeAlert.setContentText("Sucessfully Added Family Member");
+       AddRelativeAlert.setTitle("Sucessful");
+       AddRelativeAlert.show();
+       }      
+             
+    }
+   
+   
+    public static void main(String [] args)
+    {
+        launch(args);
+    }
+   
+ 
+}
+ 
+ 
+ 
+ 
+import java.util.*;
+import java.io.Serializable;
+import java.util.Iterator;
+ 
+/**      
+    * ICT 373 Assignment 2
+    * date 4 November 2020
+    * filename Assignment2
+    * Author Tan JunQi 33872846
+    * program Family class
+    */
+ 
+public class Family implements Serializable {
+   
+   
+   
+   
+   private String type;
+   private String FirstName;
+   private String LastName;
+   private String MaidenName;
+   private char Gender;
+   private Address Addrs;
+   private String biblography;
+   private Family Father;
+   private Family Mother;
+   private Family Spouse;
+   private ArrayList<Family> Children = new ArrayList<Family>();
+   
+   public Family()
+   {
+       
+   }
+   
+   public Family(String FN, String LN, char Gdr, Address add, String biblo )
+   {
+       FirstName = FN;
+       LastName = LN;
+       Gender = Character.toUpperCase(Gdr);
+       Addrs = add;
+       biblography = biblo;
+   }
+  public void setType(String relativetype)
+   {
+       type = relativetype;
+   }
+   public String Checktype()
+   {
+       return type;
+   }
+   public void setFirstName(String FN)
+   {
+       FirstName = FN;
+   }
+   
+   public void setLastName(String LN)
+   {
+       LastName = LN;
+   }
+   public boolean setGender(char Gdr)
+   {
+       char check = Character.toUpperCase(Gdr);
+       if(check=='M' || check=='F')
+       {
+           Gender = Character.toUpperCase(Gdr);
+           return true;
+       }
+       else
+       {
+           return false;
+       }
+       
+   }
+   public void setAddress (Address add)
+   {
+       Addrs = add;
+   }
+   public void setBiblography(String biblo)
+   {
+       biblography = biblo;
+   }
+   public void setMaidenName(String MDN)
+   {
+       MaidenName = MDN;
+   }
+   public void addChild(Family child)
+   {
+       
+       
+           Children.add(child);
+       
+       
+   }
+   public boolean setFather(Family father)
+   {
+       if(father.getGender()=='M')
+       {
+            Father = father;
+            return true;
+       }
+       else
+       {
+           return false;
+       }
+           
+         
+     
+   }
+   public boolean setMother(Family mother)
+   {
+       if(mother.getGender()=='F')
+       {
+            Mother = mother;
+            return true;
+       }
+       else
+       {
+           return false;
+       }
+       
+     
+   }
+   public void setSpouse(Family Spouse)
+   {    
+           this.Spouse = Spouse;      
+   }
+   public void setChildren (ArrayList<Family> children)
+   {
+       
+       Children = children;
+   }
+   
+   public String getFirstName()
+   {
+       return FirstName;
+   }
+   public String getLastName()
+   {
+       return LastName;
+   }
+   public char getGender()
+   {
+       return Gender;
+   }
+   public Address getAddress()
+   {
+      return Addrs;
+   }
+   public String getBiblography()
+   {
+       return biblography;
+   }
+   public String getMaidenName()
+   {
+       return MaidenName;
+   }
+   
+   public Family getFather()
+   {
+       return Father ;
+   }
+   public Family getMother()
+   {
+       return Mother;
+   }
+   public Family getSpouse()
+   {
+       return Spouse;
+   }
+   public ArrayList<Family> getChildren ()
+   {
+       return Children;
+   }
+   public int NumberOfChild()
+   {
+       return Children.size();
+   }
+   
+   public boolean check(String relation)
+   {
+       switch(relation)
+       {
+           case "Father":
+               return getFather()!=null;
+           case "Mother":
+               return getMother()!=null;
+           case "Spouse":
+               return getSpouse()!=null;
+           case "MaidenName":
+               return getMaidenName()!=null;
+           case "Children":
+                   return !getChildren().isEmpty();
+       }
+       return false;
+   }
+   
+   public String getFamilyHierarchy()
+   {
+       return getAllNames(this," ");
+   }
+   
+   public String getAllNames(Family Member,String spacing)
+   {
+       String Family = "Personal Information:\n";
+       Family += spacing+"First Name:"+Member.FirstName+"\n";
+       Family += spacing+"Last Name:" + Member.LastName+"\n";
+       Family += spacing+"Maiden Name:"+Member.MaidenName+"\n";
+       Family += spacing+"Life Description:"+Member.biblography+"\n";
+       Family += spacing+"Gender:"+Member.Gender+"\n";
+       Family += "Address Information\n";
+       Family += spacing+"Street Name:"+Member.getAddress().GetStreetName()+"\n";
+       Family += spacing+"Street Number:"+Member.getAddress().GetStreetNumber()+"\n";
+       Family += spacing+"Surbub:"+Member.getAddress().Getsuburb()+"\n";
+       Family += spacing+"PostCode:"+Member.getAddress().GetPostCode()+"\n";
+       Family+="\n";
+       Family+="\n";
+       if(Member.check("Father"))
+       {
+           Family +="Father details :\n";
+           Family father = Member.getFather();
+           Family+= getAllNames(father,spacing);
+       }
+       if (Member.check("Mother"))
+       {
+           Family +="Mother details :\n";
+           Family Mother = Member.getMother();
+           Family+= getAllNames(Mother,spacing);
+       }
+       if(Member.check("Spouse"))
+       {
+           Family +="Spouse details :\n";
+           Family Spouse = Member.getSpouse();
+           Family+= getAllNames(Spouse,spacing);
+       }
+       if(getIterator().hasNext())
+       {
+           for (Family fam:Member.Children)
+            {
+           Family += "Children Info: \n";
+           Family += getAllNames(fam,spacing+spacing);
+            }
+       }
+       return Family;
+       }
+       
+     
+   
+   public Iterator<Family> getIterator()
+   {
+       
+       Iterator<Family> childrenIterator = new Iterator<Family>()
+       {
+           int counter = 0;
+           public boolean hasNext()
+           {
+               return counter<Children.size();
+           }
+           public Family next()
+           {
+               return Children.get(counter++);
+           }
+           
+       };
+           return childrenIterator;
+   }
+   
+   public Family getDemoFamily()
+   {
+     
+        Address demo = new Address("Buffalo road","662","821","092");
+        Family fam = new Family();
+        fam.setFirstName("Jun Qi");
+        fam.setLastName("Tan");
+        fam.setGender('M');
+        fam.setBiblography("Hello");
+        fam.setAddress(demo);
+        fam.setType("Root");
+        Family Children = new Family();
+        Children.setFirstName("Claire");
+        Children.setLastName("Tan");
+        Children.setGender('F');
+        Children.setBiblography("Nice");
+        Children.setAddress(demo);
+        Children.setType("Child");
+        fam.addChild(Children);
+        Family father = new Family("Leqing","Lee",'M',demo,"...");
+        father.setType("Father");
+        Family mother = new Family("Moon","Agekinu",'F',demo,"...");
+        mother.setType("Mother");
+        fam.setFather(father);
+        fam.setMother(mother);
+        return fam;
+       
+   }
+    @Override
+   public String toString()
+   {
+       return FirstName+LastName;
+   }
+   
+   
+}
+ 
+ 
+ 
+import java.io.Serializable;
+ 
+/**
+    *
+    * ICT 373 Assignment 2
+    * date 4 November 2020
+    * filename Assignment2
+    * Author Tan JunQi 33872846
+    * program Address class
+    */
+public class Address implements Serializable{
+   
+   
+ 
+    private String StreetNumber;
+    private String StreetName;
+    private String suburb;
+    private String postcode;
+ 
+    public Address() {
+ 
+    }
+ 
+    public Address(String SNumber, String SName, String Sub, String Post) {
+        StreetNumber = SNumber;
+        StreetName = SName;
+        suburb = Sub;
+        postcode = Post;
+    }
+ 
+    public void SetStreetNumber(String SN) {
+        StreetNumber = SN;
+    }
+ 
+    public void SetStreetName(String SName) {
+        StreetName = SName;
+    }
+ 
+    public void Setsuburb(String Sub) {
+        suburb = Sub;
+    }
+ 
+    public void SetPostCode(String Post) {
+        postcode = Post;
+    }
+ 
+    public String GetStreetNumber() {
+        return StreetNumber;
+    }
+ 
+    public String GetStreetName() {
+        return StreetName;
+    }
+ 
+    public String Getsuburb() {
+        return suburb;
+    }
+ 
+    public String GetPostCode() {
+        return postcode;
+    }
+}
